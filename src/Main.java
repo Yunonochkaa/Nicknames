@@ -11,14 +11,13 @@ class Nicknames {
         Random random = new Random();
         String[] texts = new String[100_000];
 
-
         for (int i = 0; i < texts.length; i++) {
             texts[i] = generateText("abc", 3 + random.nextInt(3));
         }
 
-        Thread thread1 = new Thread(() -> checkBeautifulWords(texts, 3, countLength3));
-        Thread thread2 = new Thread(() -> checkBeautifulWords(texts, 4, countLength4));
-        Thread thread3 = new Thread(() -> checkBeautifulWords(texts, 5, countLength5));
+        Thread thread1 = new Thread(() -> checkBeautifulWords(texts));
+        Thread thread2 = new Thread(() -> checkBeautifulWords(texts));
+        Thread thread3 = new Thread(() -> checkBeautifulWords(texts));
 
         thread1.start();
         thread2.start();
@@ -42,10 +41,20 @@ class Nicknames {
         return text.toString();
     }
 
-    public static void checkBeautifulWords(String[] texts, int length, AtomicInteger counter) {
+    public static void checkBeautifulWords(String[] texts) {
         for (String text : texts) {
-            if (text.length() == length && isBeautiful(text)) {
-                counter.incrementAndGet(); 
+            if (isBeautiful(text)) {
+                switch (text.length()) {
+                    case 3:
+                        countLength3.incrementAndGet();
+                        break;
+                    case 4:
+                        countLength4.incrementAndGet();
+                        break;
+                    case 5:
+                        countLength5.incrementAndGet();
+                        break;
+                }
             }
         }
     }
