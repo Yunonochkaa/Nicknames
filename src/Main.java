@@ -45,7 +45,7 @@ class Nicknames {
     public static void checkBeautifulWords(String[] texts, int length, AtomicInteger counter) {
         for (String text : texts) {
             if (text.length() == length && isBeautiful(text)) {
-                counter.incrementAndGet(); // Увеличиваем счетчик
+                counter.incrementAndGet(); 
             }
         }
     }
