@@ -1,35 +1,82 @@
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class Nicknames {
-
-    public static final AtomicInteger countLength3 = new AtomicInteger(0);
-    public static final AtomicInteger countLength4 = new AtomicInteger(0);
-    public static final AtomicInteger countLength5 = new AtomicInteger(0);
+public class Main {
+    public static AtomicInteger countLength1  = new AtomicInteger();
+    public static AtomicInteger countLength2  = new AtomicInteger();
+    public static AtomicInteger countLength3 = new AtomicInteger();
 
     public static void main(String[] args) throws InterruptedException {
         Random random = new Random();
         String[] texts = new String[100_000];
-
         for (int i = 0; i < texts.length; i++) {
             texts[i] = generateText("abc", 3 + random.nextInt(3));
         }
 
-        Thread thread1 = new Thread(() -> checkBeautifulWords(texts));
-        Thread thread2 = new Thread(() -> checkBeautifulWords(texts));
-        Thread thread3 = new Thread(() -> checkBeautifulWords(texts));
+        Thread palindrome = new Thread(() ->
+        {
+            for (String text : texts) {
+                if (isPalindrome(text) && !isSameLetter(text) && !isAscending(text)) {
+                    incrementCounter(text.length());
 
-        thread1.start();
-        thread2.start();
-        thread3.start();
+                }
+            }
+        });
+        palindrome.start();
 
-        thread1.join();
-        thread2.join();
-        thread3.join();
+        Thread sameLetter = new Thread(() -> {
+            for (String text : texts) {
+                if (!isPalindrome(text) && isSameLetter(text) && !isAscending(text)) {
+                    incrementCounter(text.length());
+                }
+            }
+        });
+        sameLetter.start();
 
-        System.out.println("Красивых слов с длиной 3: " + countLength3.get() + " шт");
-        System.out.println("Красивых слов с длиной 4: " + countLength4.get() + " шт");
-        System.out.println("Красивых слов с длиной 5: " + countLength5.get() + " шт");
+        Thread ascending = new Thread(() -> {
+            for (String text : texts) {
+                if (!isPalindrome(text) && !isSameLetter(text) && isAscending(text)) {
+                    incrementCounter(text.length());
+                }
+            }
+        });
+        ascending.start();
+
+        sameLetter.join();
+        ascending.join();
+        palindrome.join();
+
+        System.out.println("Красивых слов с длиной 3: " + countLength1 + " шт");
+        System.out.println("Красивых слов с длиной 4: " + countLength2 + " шт");
+        System.out.println("Красивых слов с длиной 5: " + countLength3 + " шт");
+    }
+
+    public static boolean isPalindrome(String text) {
+        return text.equals(new StringBuilder(text).reverse().toString());
+    }
+
+    public static boolean isSameLetter(String text) {
+        for (int i = 1; i < text.length(); i++) {
+            if (text.charAt(i) != text.charAt(i - 1))
+                return false;
+        }
+        return true;
+    }
+
+    public static boolean isAscending(String text) {
+        for (int i = 1; i < text.length(); i++) {
+            if (text.charAt(i) > text.charAt(i - 1))
+                return false;
+        }
+        return true;
+    }
+
+    public static void incrementCounter(int text) {
+        switch (text) {
+            case 3 -> countLength1.incrementAndGet();
+            case 4 -> countLength2.incrementAndGet();
+            case 5 -> countLength3.incrementAndGet();
+        }
     }
 
     public static String generateText(String letters, int length) {
@@ -39,57 +86,5 @@ class Nicknames {
             text.append(letters.charAt(random.nextInt(letters.length())));
         }
         return text.toString();
-    }
-
-    public static void checkBeautifulWords(String[] texts) {
-        for (String text : texts) {
-            if (isBeautiful(text)) {
-                switch (text.length()) {
-                    case 3:
-                        countLength3.incrementAndGet();
-                        break;
-                    case 4:
-                        countLength4.incrementAndGet();
-                        break;
-                    case 5:
-                        countLength5.incrementAndGet();
-                        break;
-                }
-            }
-        }
-    }
-
-    public static boolean isBeautiful(String text) {
-        return isPalindrome(text) || isSameLetter(text) || isSorted(text);
-    }
-
-    public static boolean isPalindrome(String text) {
-        int len = text.length();
-        for (int i = 0; i < len / 2; i++) {
-            if (text.charAt(i) != text.charAt(len - 1 - i)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static boolean isSameLetter(String text) {
-        char firstChar = text.charAt(0);
-        for (char c : text.toCharArray()) {
-            if (c != firstChar) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static boolean isSorted(String text) {
-        char[] chars = text.toCharArray();
-        for (int i = 1; i < chars.length; i++) {
-            if (chars[i] < chars[i - 1]) {
-                return false;
-            }
-        }
-        return true;
     }
 }
